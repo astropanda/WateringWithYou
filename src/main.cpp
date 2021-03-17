@@ -20,9 +20,10 @@ const char* mDNSname = "edera";               // mDNS adress
 
 const int pinVCC = D0;     // pin that powers the sensor @ 3.3V
 const int sensorPin = A0;  // analog pin to measure sensor value
-const int measureTime = 5; // measure every X seconds (approx)
 
-int passingTime = 0;
+const unsigned int measureTime = 5000; // measure every X milliseconds (approx)
+unsigned long previousTime = 0;
+
 int SensorValue[3];
 float meanHumidity = 0.0;
 int calcHumidity = 0;
@@ -196,6 +197,8 @@ void setup() {
 
       startUDP();
       separator();
+
+      previousTime = millis();
 }
 
 void loop() {
@@ -203,10 +206,7 @@ void loop() {
   MDNS.update();         // Check if there is a mDNS request
   ArduinoOTA.handle();   // Check if there is a OTA update request
 
-  passingTime++;
-  delay(1000);
-
-  while((fileSizeTemp < 2000000) && (passingTime > measureTime)) {
+  if((fileSizeTemp < 2000000) && (millis() - previousTime > measureTime)) {
     File tempfile = LittleFS.open("/humidity.csv", "a");
     fileSizeTemp = tempfile.size();
     tempfile.close();
@@ -216,7 +216,8 @@ void loop() {
 
     writeHumidity(measureHumidity());
 
-    passingTime = 0;
+    previousTime = millis();
+
   }
 
-} // void loop()
+}
