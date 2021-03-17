@@ -10,15 +10,16 @@
 #include <ArduinoOTA.h>
 #include <WiFiUdp.h>
 
-ESP8266WebServer server(80);
+ESP8266WebServer server(80);     // Create a webserver instance
+WiFiUDP UDP;                     // Create an instance of the WiFiUDP class to send and receive
 
 // change these values to match your network
 const char* ssid = "Vodafone-34321872";       //  your network SSID (name)
-const char* pass = "2smid42fpfix3pe";    // your network password
-const char* mDNSname = "edera";    // mDNS adress
+const char* pass = "2smid42fpfix3pe";         // your network password
+const char* mDNSname = "edera";               // mDNS adress
 
-const int pinVCC = D0;
-const int sensorPin = A0;
+const int pinVCC = D0;     // pin that powers the sensor @ 3.3V
+const int sensorPin = A0;  // analog pin to measure sensor value
 const int measureTime = 5; // measure every X seconds (approx)
 
 int passingTime = 0;
@@ -29,6 +30,10 @@ float voltage = 0;
 
 size_t fileSizeTemp;
 
+IPAddress timeServerIP;          // time.nist.gov NTP server address
+const char* NTPServerName = "time.nist.gov";
+const int NTP_PACKET_SIZE = 48;  // NTP time stamp is in the first 48 bytes of the message
+byte NTPBuffer[NTP_PACKET_SIZE]; // buffer to hold incoming and outgoing packets
 
 //---------------------USEFUL FUNCTIONS-----------------------
 
@@ -66,6 +71,17 @@ void writeHumidity(int actualHumidity) {
   humLog.close();
 }
 
+void separator() {
+  Serial.println();
+  Serial.println("<<>><<>><<>><<>><<>><<>><<>><<>><<>><<>><<>>");
+  Serial.println();
+}
+
+void welcome() {
+  Serial.printf("              ______\n   _        ,',----.`. WATERING WITH YOU\n  '.`-.  .-' '----. ||\n     `.`-'--------| ;; developed by\n       `.|--------|//  Luca Della Mora\n         |         /   2021\n         '--------' ");
+  Serial.println();
+}
+
 //---------------------WEBSERVER FUNCTIONS-----------------------
 /*
 void handleRoot() { }
@@ -85,7 +101,14 @@ void startWebServer() {
   Serial.println("HTTP server started");
 }
 */
+
 //---------------------STARTUP FUNCTIONS-----------------------
+void startSerial() {
+  Serial.begin(9600);
+  delay(1000);
+  Serial.println();
+  Serial.println(F("Serial started at 9600 baud"));
+}
 
 void startWiFi() { // Connect to WiFI Network
       Serial.print(F("Connecting to "));
@@ -115,8 +138,6 @@ void startLittleFS() { // Start the LITTLEFS and list all contents
       size_t fileSize = dir.fileSize();
       Serial.printf("\tFS File: %s, size: %s\r\n", fileName.c_str(), formatBytes(fileSize).c_str());
     }
-  Serial.printf("\n");
-
 }
 
 void startOTA() {
@@ -144,27 +165,43 @@ void startOTA() {
   Serial.println("OTA ready");
 }
 
+void startUDP() {
+  Serial.println("Starting UDP");
+  UDP.begin(123);                          // Start listening for UDP messages on port 123
+  Serial.print("Local port:\t");
+  Serial.println(UDP.localPort());
+}
 
 //---------------------MAIN PROGRAM-----------------------
 
 void setup() {
 
-      Serial.begin(9600);
-      delay(1000);
-      Serial.println(F("Serial started at 9600 baud"));
-      Serial.println();
+      startSerial();
+      separator();
+
+      welcome();
+      separator();
 
       startWiFi();
-      startmDNS();
-      startLittleFS();
-      startOTA();
+      separator();
 
+      startmDNS();
+      separator();
+
+      startLittleFS();
+      separator();
+
+      startOTA();
+      separator();
+
+      startUDP();
+      separator();
 }
 
 void loop() {
 
-  MDNS.update(); // Check if there is a mDNS request
-  ArduinoOTA.handle();
+  MDNS.update();         // Check if there is a mDNS request
+  ArduinoOTA.handle();   // Check if there is a OTA update request
 
   passingTime++;
   delay(1000);
