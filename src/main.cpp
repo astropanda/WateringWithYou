@@ -18,8 +18,8 @@ const char* ssid = "Vodafone-34321872";       //  your network SSID (name)
 const char* pass = "2smid42fpfix3pe";         // your network password
 const char* mDNSname = "edera";               // mDNS adress
 
-const int pinVCC = D0;
-const int sensorPin = A0;
+const int pinVCC = D0;     // pin that powers the sensor @ 3.3V
+const int sensorPin = A0;  // analog pin to measure sensor value
 const int measureTime = 5; // measure every X seconds (approx)
 
 int passingTime = 0;
@@ -78,11 +78,9 @@ void separator() {
 }
 
 void welcome() {
-  Serial.println();
-  Serial.printf("\n              ______\n   _        ,',----.`. WATERING WITH YOU\n  '.`-.  .-' '----. ||\n     `.`-'--------| ;; developed by\n       `.|--------|//  Luca Della Mora\n         |         /   2021\n         '--------' ");
+  Serial.printf("              ______\n   _        ,',----.`. WATERING WITH YOU\n  '.`-.  .-' '----. ||\n     `.`-'--------| ;; developed by\n       `.|--------|//  Luca Della Mora\n         |         /   2021\n         '--------' ");
   Serial.println();
 }
-
 
 //---------------------WEBSERVER FUNCTIONS-----------------------
 /*
@@ -103,6 +101,7 @@ void startWebServer() {
   Serial.println("HTTP server started");
 }
 */
+
 //---------------------STARTUP FUNCTIONS-----------------------
 void startSerial() {
   Serial.begin(9600);
@@ -201,8 +200,8 @@ void setup() {
 
 void loop() {
 
-  MDNS.update(); // Check if there is a mDNS request
-  ArduinoOTA.handle();
+  MDNS.update();         // Check if there is a mDNS request
+  ArduinoOTA.handle();   // Check if there is a OTA update request
 
   passingTime++;
   delay(1000);
