@@ -21,7 +21,7 @@ const char* mDNSname = "edera";               // mDNS adress
 const int pinVCC = D0;     // pin that powers the sensor @ 3.3V
 const int sensorPin = A0;  // analog pin to measure sensor value
 
-const unsigned int measureTime = 5000; // measure every X milliseconds (approx)
+const unsigned int measureTime = 5 * 1000; // measure every X seconds (approx)
 unsigned long previousTime = 0;
 
 int SensorValue[3];
@@ -31,8 +31,8 @@ float voltage = 0;
 
 size_t fileSizeTemp;
 
-IPAddress timeServerIP;          // time.nist.gov NTP server address
-const char* NTPServerName = "time.nist.gov";
+IPAddress timeServerIP;          // ntp1.inrim.it NTP server address
+const char* NTPServerName = "ntp1.inrim.it";
 const int NTP_PACKET_SIZE = 48;  // NTP time stamp is in the first 48 bytes of the message
 byte NTPBuffer[NTP_PACKET_SIZE]; // buffer to hold incoming and outgoing packets
 
@@ -104,6 +104,7 @@ void startWebServer() {
 */
 
 //---------------------STARTUP FUNCTIONS-----------------------
+
 void startSerial() {
   Serial.begin(9600);
   delay(1000);
@@ -173,6 +174,46 @@ void startUDP() {
   Serial.println(UDP.localPort());
 }
 
+//---------------------NTP FUNCTIONS-----------------------
+
+void sendNTPpacket(IPAddress& address) {
+  memset(NTPBuffer, 0, NTP_PACKET_SIZE);  // set all bytes in the buffer to 0
+  // Initialize values needed to form NTP request
+  NTPBuffer[0] = 0b11100011;   // LI, Version, Mode
+  // send a packet requesting a timestamp:
+  UDP.beginPacket(address, 123); // NTP requests are to port 123
+  UDP.write(NTPBuffer, NTP_PACKET_SIZE);
+  UDP.endPacket();
+}
+
+uint32_t getTime() {
+  if (UDP.parsePacket() == 0) { // If there's no response (yet)
+    return 0;
+  }
+  UDP.read(NTPBuffer, NTP_PACKET_SIZE); // read the packet into the buffer
+  // Combine the 4 timestamp bytes into one 32-bit number
+  uint32_t NTPTime = (NTPBuffer[40] << 24) | (NTPBuffer[41] << 16) | (NTPBuffer[42] << 8) | NTPBuffer[43];
+  // Convert NTP time to a UNIX timestamp:
+  // Unix time starts on Jan 1 1970. That's 2208988800 seconds in NTP time:
+  const uint32_t seventyYears = 2208988800UL;
+  // subtract seventy years:
+  uint32_t UNIXTime = NTPTime - seventyYears;
+  return UNIXTime;
+}
+
+startNTP() {
+  if(!WiFi.hostByName(NTPServerName, timeServerIP)) { // Get the IP address of the NTP server
+    Serial.println("DNS lookup failed. Rebooting.");
+    Serial.flush();
+    ESP.reset();
+  }
+  Serial.print("Time server IP:\t");
+  Serial.println(timeServerIP);
+  
+  Serial.println("\r\nSending first NTP request ...");
+  sendNTPpacket(timeServerIP);
+}
+
 //---------------------MAIN PROGRAM-----------------------
 
 void setup() {
@@ -206,7 +247,7 @@ void loop() {
   MDNS.update();         // Check if there is a mDNS request
   ArduinoOTA.handle();   // Check if there is a OTA update request
 
-  if((fileSizeTemp < 2000000) && (millis() - previousTime > measureTime)) {
+  if((fileSizeTemp < 2E6) && (millis() - previousTime > measureTime)) { // if the time is right, measure and append
     File tempfile = LittleFS.open("/humidity.csv", "a");
     fileSizeTemp = tempfile.size();
     tempfile.close();
@@ -217,7 +258,6 @@ void loop() {
     writeHumidity(measureHumidity());
 
     previousTime = millis();
-
   }
 
 }
