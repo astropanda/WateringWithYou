@@ -1,7 +1,13 @@
 /*
  TBD
 */
-#include <HelperLib.h>
+
+#include <HelperFncs.h>
+#include <NtpFncs.h>
+#include <StartupFncs.h>
+
+
+ESP8266WebServer server(80);     // Create a webserver instance
 
 //---------------------MAIN PROGRAM-----------------------
 
