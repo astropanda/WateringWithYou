@@ -9,6 +9,9 @@
 
 ESP8266WebServer server(80);     // Create a webserver instance
 
+const unsigned int measureTime = 5 * 1000; // measure every X seconds (approx)
+unsigned long previousTime = 0;
+
 //---------------------MAIN PROGRAM-----------------------
 
 void setup() {

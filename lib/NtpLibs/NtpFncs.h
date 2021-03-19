@@ -1,4 +1,6 @@
 //---------------------DECLARATIONS-----------------------
+#include <Arduino.h>
+#include <ESP8266WiFi.h>
 #include <WiFiUdp.h>
 
 WiFiUDP UDP;                     // Create an instance of the WiFiUDP class to send and receive
