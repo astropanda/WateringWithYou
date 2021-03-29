@@ -3,13 +3,11 @@
 */
 
 #include <HelperFncs.h>
-#include <NtpFncs.h>
 #include <StartupFncs.h>
-
 
 ESP8266WebServer server(80);     // Create a webserver instance
 
-const unsigned int measureTime = 5 * 1000; // measure every X seconds (approx)
+const unsigned int measureTime = 10 * 1000; // measure every X seconds (approx)
 unsigned long previousTime = 0;
 
 //---------------------MAIN PROGRAM-----------------------
@@ -35,6 +33,8 @@ void setup() {
       separator();
 
       startUDP();
+      timeClient.begin();
+
       separator();
 
       previousTime = millis();
@@ -52,8 +52,10 @@ void loop() {
 
     Serial.print("Il file occupa: ");
     Serial.println(formatBytes(fileSizeTemp));
+  
+    timeClient.update();
 
-    writeHumidity(measureHumidity());
+    writeHumidity(measureHumidity(), timeClient.getFormattedTime());
 
     previousTime = millis();
   }

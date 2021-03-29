@@ -3,7 +3,11 @@
 #include <LittleFS.h>
 #include <ArduinoOTA.h>
 #include <ESP8266mDNS.h>
+#include <WiFiUdp.h>
+#include <NTPClient.h>
 
+WiFiUDP ntpUDP;                     // Create an instance of the WiFiUDP class to send and receive
+NTPClient timeClient(ntpUDP);
 
 const char* ssid = "Vodafone-34321872";       //  your network SSID (name)
 const char* pass = "2smid42fpfix3pe";         // your network password
@@ -72,4 +76,11 @@ void startOTA() {
   });
   ArduinoOTA.begin();
   Serial.println("OTA ready");
+}
+
+void startUDP() {
+  Serial.println("Starting UDP");
+  ntpUDP.begin(123);                          // Start listening for UDP messages on port 123
+  Serial.print("Local port:\t");
+  Serial.println(ntpUDP.localPort());
 }

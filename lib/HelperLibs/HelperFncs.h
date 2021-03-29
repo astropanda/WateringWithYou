@@ -41,12 +41,16 @@ int measureHumidity() {
   return calcHumidity;
 }
 
-void writeHumidity(int actualHumidity) {
+void writeHumidity(int actualHumidity, String ntpTime) {
   Serial.print(F("Appending humidity to file: "));
-  Serial.println(actualHumidity);
+  Serial.print(actualHumidity);
+  Serial.print(" @ ");
+  Serial.println(ntpTime);
+
   File humLog = LittleFS.open("/humidity.csv", "a"); // Write the humidity to the csv file
-  humLog.print(actualHumidity);
+  humLog.print(ntpTime);
   humLog.print(',');
+  humLog.println(actualHumidity);
   humLog.close();
 }
 
