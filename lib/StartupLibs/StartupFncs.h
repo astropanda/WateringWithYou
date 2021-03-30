@@ -7,7 +7,7 @@
 #include <NTPClient.h>
 
 WiFiUDP ntpUDP;                     // Create an instance of the WiFiUDP class to send and receive
-NTPClient timeClient(ntpUDP, "europe.pool.ntp.org", 7200);
+NTPClient timeClient(ntpUDP, "europe.pool.ntp.org");
 
 const char* ssid = "Vodafone-34321872";       //  your network SSID (name)
 const char* pass = "2smid42fpfix3pe";         // your network password
