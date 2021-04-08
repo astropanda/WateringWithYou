@@ -5,7 +5,7 @@
 #include <HelperFncs.h>
 #include <StartupFncs.h>
 
-const unsigned int measureTime = 10 * 1000; // measure every X seconds (approx)
+const unsigned int measureTime = 15 * 60 * 1000; // measure every X minutes, in milliseconds (approx)
 unsigned long previousTime = 0;
 
 //---------------------MAIN PROGRAM-----------------------
@@ -52,13 +52,10 @@ void loop() {
     File tempfile = LittleFS.open("/humidity.csv", "a");
     fileSizeTemp = tempfile.size();
     tempfile.close();
-
-    Serial.print("Il file occupa: ");
-    Serial.println(formatBytes(fileSizeTemp));
   
     timeClient.update();
 
-    writeHumidity(measureHumidity(), timeClient.getFormattedTime(), timeClient.getEpochTime());
+    writeHumidity(measureHumidity(), timeClient.getEpochTime());
 
     previousTime = millis();
   }

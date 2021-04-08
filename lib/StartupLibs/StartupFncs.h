@@ -54,8 +54,8 @@ void startLittleFS() { // Start the LITTLEFS and list all contents
 }
 
 void startOTA() {
-  ArduinoOTA.setHostname("edera8266");
-  ArduinoOTA.setPassword("luca");
+  ArduinoOTA.setHostname("wwu8266");
+  ArduinoOTA.setPassword("wwuota");
 
   ArduinoOTA.onStart([]() {
     Serial.println("Start");

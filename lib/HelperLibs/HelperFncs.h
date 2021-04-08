@@ -41,12 +41,7 @@ int measureHumidity() {
   return calcHumidity;
 }
 
-void writeHumidity(int actualHumidity, String ntpTime, unsigned long unixTime) {
-  Serial.print(F("Appending humidity to file: "));
-  Serial.print(actualHumidity);
-  Serial.print(" @ ");
-  Serial.println(ntpTime);
-
+void writeHumidity(int actualHumidity, unsigned long unixTime) {
   File humLog = LittleFS.open("/humidity.csv", "a"); // Write the humidity to the csv file
   humLog.print(unixTime);
   humLog.print(',');
@@ -61,7 +56,7 @@ void separator() {
 }
 
 void welcome() {
-  Serial.printf("              ______\n   _        ,',----.`. WATERING WITH YOU\n  '.`-.  .-' '----. ||\n     `.`-'--------| ;; developed by\n       `.|--------|//  Luca Della Mora\n         |         /   2021\n         '--------' ");
+  Serial.printf("              ______\n   _        ,',----.`. WATERING WITH YOU\n  '.`-.  .-' '----. || v0.2 \n     `.`-'--------| ;; developed by\n       `.|--------|//  Luca Della Mora\n         |         /   2021\n         '--------' ");
   Serial.println();
 }
 
@@ -84,7 +79,6 @@ String getContentType(String filename){
 }
 
 bool handleFileRead(String path) {
-    Serial.println("handleFileRead: " + path);
   if(path.endsWith("/")) path += "index.html";           // If a folder is requested, send the index file
   String contentType = getContentType(path);             // Get the MIME type
   String pathWithGz = path + ".gz";
@@ -94,10 +88,8 @@ bool handleFileRead(String path) {
     File file = LittleFS.open(path, "r");                    // Open the file
     server.streamFile(file, contentType);    // Send it to the client
     file.close();                                          // Close the file again
-    Serial.println(String("\tSent file: ") + path);
     return true;
   }
-  Serial.println(String("\tFile Not Found: ") + path);
   return false;   
 }
 
@@ -109,7 +101,6 @@ void startWebServer() {
       File errfile = LittleFS.open(errpath, "r");                   
       server.streamFile(errfile, "text/html");   
       errfile.close();                                          
-      Serial.println(String("\tSent 404 page"));
     }                                                 
   });
 
